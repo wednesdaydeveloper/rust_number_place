@@ -90,26 +90,29 @@ pub mod sudoku {
                 return Some(solved.clone());
             } else {
                 if unsolved.iter().all(|&cell| cell.unused(&solved).len() > 0) {
-                    unsolved.sort_by_cached_key(|&cell| cell.unused(&solved).len());
-                    let cell = unsolved[0];
-                    let answers = cell
-                        .unused(&solved)
+                    if let Some(cell) = unsolved
                         .iter()
-                        .filter_map(|&val| {
-                            let mut new_solved: Vec<SolvedCell> = Vec::new();
-                            new_solved.extend(solved);
-                            new_solved.extend([SolvedCell { cell, val }]);
-                            return self.solve(&new_solved);
-                        })
-                        .collect::<Vec<Vec<SolvedCell>>>();
-                    if answers.len() == 1 {
-                        return Some((&answers[0]).clone());
+                        .min_by_key(|&cell| cell.unused(&solved).len())
+                    {
+                        let answers: Vec<Vec<SolvedCell>> = cell
+                            .unused(&solved)
+                            .iter()
+                            .filter_map(|&val| {
+                                self.solve(
+                                    &[solved.clone(), vec![SolvedCell { cell: *cell, val }]]
+                                        .concat(),
+                                )
+                            })
+                            .collect::<Vec<Vec<SolvedCell>>>();
+                        if answers.len() == 1 {
+                            return Some((&answers[0]).clone());
+                        }
                     }
                 }
             }
             None::<Vec<SolvedCell>>
         }
-    
+
         pub fn answer_to_array(&self, answer: &Vec<SolvedCell>) -> [[u8; 9]; 9] {
             let mut array: [[u8; 9]; 9] = [[0; 9]; 9];
             for row in 0..9 {
@@ -146,17 +149,20 @@ mod tests {
         ]);
         assert!(answers.is_some());
         // 正しい解になっているか確認する
-        assert_eq!(sudoku.answer_to_array(&answers.unwrap()), [
-            [2, 8, 7, 5, 1, 9, 4, 3, 6],
-            [3, 1, 6, 4, 2, 8, 5, 9, 7],
-            [4, 5, 9, 3, 6, 7, 1, 8, 2],
-            [7, 9, 4, 8, 5, 2, 3, 6, 1],
-            [8, 3, 1, 7, 4, 6, 2, 5, 9],
-            [5, 6, 2, 9, 3, 1, 8, 7, 4],
-            [9, 7, 5, 1, 8, 4, 6, 2, 3],
-            [6, 4, 8, 2, 9, 3, 7, 1, 5],
-            [1, 2, 3, 6, 7, 5, 9, 4, 8],
-        ]);
+        assert_eq!(
+            sudoku.answer_to_array(&answers.unwrap()),
+            [
+                [2, 8, 7, 5, 1, 9, 4, 3, 6],
+                [3, 1, 6, 4, 2, 8, 5, 9, 7],
+                [4, 5, 9, 3, 6, 7, 1, 8, 2],
+                [7, 9, 4, 8, 5, 2, 3, 6, 1],
+                [8, 3, 1, 7, 4, 6, 2, 5, 9],
+                [5, 6, 2, 9, 3, 1, 8, 7, 4],
+                [9, 7, 5, 1, 8, 4, 6, 2, 3],
+                [6, 4, 8, 2, 9, 3, 7, 1, 5],
+                [1, 2, 3, 6, 7, 5, 9, 4, 8],
+            ]
+        );
     }
 
     #[test]
