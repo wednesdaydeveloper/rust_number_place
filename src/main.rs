@@ -1,6 +1,7 @@
 // src/main.rs
 fn main() {
-    use number_place::sudoku::Sudoku;
+    use number_place::sudoku::solve_from_array;
+    use number_place::sudoku::print;
     // 初期状態の盤面
     let array = [
             [0,0,0,0,0,0,0,0,0],
@@ -14,10 +15,9 @@ fn main() {
             [0,0,0,0,7,0,0,0,0],
     ];
 
-    let sudoku = Sudoku::new();
-    if let Some(answers) = sudoku.solve_from_array(&array) {
+    if let Some(answers) = solve_from_array(&array) {
         println!("Solved!.");
-        sudoku.print(&answers)
+        print(&answers)
     }
     else {
         println!("No solution found.");
