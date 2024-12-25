@@ -90,7 +90,7 @@ pub mod sudoku {
             if let Some((unused, cell)) = unsolved
                 .iter()
                 //  候補リストとセルのタプルを作成
-                .map(|&cell| (cell.unused(&solved), cell))
+                .map(|&cell| (cell.unused(solved), cell))
                 //  候補リストの長さが最小のものを取得
                 .min_by_key(|(unused, _)| unused.len())
             {
@@ -104,7 +104,7 @@ pub mod sudoku {
                     .collect::<Vec<Vec<SolvedCell>>>();
                 if answers.len() == 1 {
                     //  解が1つだけの場合のみ、正解！
-                    return Some((&answers[0]).clone());
+                    return Some(answers[0].clone());
                 }
             }
         }
