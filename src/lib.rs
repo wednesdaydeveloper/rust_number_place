@@ -12,7 +12,7 @@ pub mod sudoku {
             (self.row / 3) * 3 + self.col / 3
         }
 
-        pub fn unused(&self, solved: &Vec<SolvedCell>) -> Vec<u8> {
+        pub fn unused(&self, solved: &SolvedCells) -> Vec<u8> {
             let solved_numbers = solved
                 .iter()
                 .filter(|&solved_cell| {
@@ -32,12 +32,14 @@ pub mod sudoku {
         pub cell: Cell,
         pub val: u8,
     }
+    
+    pub type SolvedCells = Vec<SolvedCell>;
 
     fn to_row_col() -> itertools::Product<std::ops::Range<u8>, std::ops::Range<u8>> {
         iproduct!(0..9, 0..9)
     }
 
-    pub fn to_string(solved: &Vec<SolvedCell>) -> String {
+    pub fn to_string(solved: &SolvedCells) -> String {
         to_row_col()
             .map(|(row, col)| {
                 format!(
@@ -58,7 +60,7 @@ pub mod sudoku {
             .join("\r\n")
     }
 
-    pub fn solve_from_array(array: &[[u8; 9]; 9]) -> Option<Vec<SolvedCell>> {
+    pub fn solve_from_array(array: &[[u8; 9]; 9]) -> Option<SolvedCells> {
         let solved = to_row_col()
             .filter(|&(row, col)| array[row as usize][col as usize] != 0)
             .map(|(row, col)| SolvedCell {
@@ -71,7 +73,7 @@ pub mod sudoku {
         solve(&solved)
     }
 
-    fn solve(solved: &Vec<SolvedCell>) -> Option<Vec<SolvedCell>> {
+    fn solve(solved: &SolvedCells) -> Option<SolvedCells> {
         //  未入力のセルを抽出
         let unsolved = to_row_col()
             .filter(|&(row, col)| {
@@ -95,29 +97,29 @@ pub mod sudoku {
                 .min_by_key(|(unused, _)| unused.len())
             {
                 //  その候補リストの値を1つセットして再帰的に solve を実行する。
-                let answers: Vec<Vec<SolvedCell>> = unused
+                let answers: Vec<SolvedCells> = unused
                     .iter()
                     .filter_map(|&val| {
                         let new_solved = [solved.clone(), vec![SolvedCell { cell, val }]].concat();
                         solve(&new_solved)
                     })
-                    .collect::<Vec<Vec<SolvedCell>>>();
+                    .collect::<Vec<SolvedCells>>();
                 if answers.len() == 1 {
                     //  解が1つだけの場合のみ、正解！
                     return Some(answers[0].clone());
                 }
             }
         }
-        None::<Vec<SolvedCell>>
+        None::<SolvedCells>
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::sudoku::solve_from_array;
-    use crate::sudoku::SolvedCell;
+    use crate::sudoku::SolvedCells;
 
-    pub fn answer_to_array(answer: &Vec<SolvedCell>) -> [[u8; 9]; 9] {
+    pub fn answer_to_array(answer: &SolvedCells) -> [[u8; 9]; 9] {
         let mut array: [[u8; 9]; 9] = [[0; 9]; 9];
         for row in 0..9 {
             for col in 0..9 {
